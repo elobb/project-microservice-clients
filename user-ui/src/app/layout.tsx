@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers/NextUiProvider";
+import { ToastBar, Toaster } from "react-hot-toast";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -23,6 +24,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${poppins.variable}`}>
         <div className="w-screen h-screen bg-gray-900">
+          <Toaster position="top-right" reverseOrder={false} />{" "}
           <Providers>{children}</Providers>
         </div>
       </body>

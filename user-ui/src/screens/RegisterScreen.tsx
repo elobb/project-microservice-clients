@@ -1,19 +1,30 @@
 "use client";
 import { Button, Input } from "@nextui-org/react";
-import React from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@apollo/client";
+import { REGISTER_USER } from "@/graphql/actions/register.action";
+import toast from "react-hot-toast";
 
 const formSchema = z.object({
-  user_name: z.string().min(1, "User name is required"),
+  name: z.string().min(1, "User name is required"),
   email: z.string().email("Invalid email address"),
+  phone_number: z.number(),
   password: z.string().min(8, "Password must be at least 8 characters long"),
 });
 
 type LoginSchema = z.infer<typeof formSchema>;
 
-const RegisterScreen = () => {
+// Define the props interface
+interface ComponentProps {
+  setAuthType: Dispatch<SetStateAction<string>>;
+}
+
+const RegisterScreen: React.FC<ComponentProps> = ({ setAuthType }) => {
+  const [registerUserMutation, { loading, error, data }] =
+    useMutation(REGISTER_USER);
   const {
     register,
     handleSubmit,
@@ -23,9 +34,20 @@ const RegisterScreen = () => {
     resolver: zodResolver(formSchema),
   });
 
-  const onSubmit = (data: LoginSchema) => {
-    console.log(data);
-    reset();
+  const onSubmit = async (data: LoginSchema) => {
+    try {
+      const response = await registerUserMutation({ variables: data });
+      console.log(response.data);
+      localStorage.setItem(
+        "activationToken",
+        response.data.register.activation_token
+      );
+      reset();
+      toast.success(response.data.register.message);
+      setAuthType("verify");
+    } catch (error) {
+      console.log(error.message);
+    }
   };
 
   return (
@@ -35,13 +57,26 @@ const RegisterScreen = () => {
         <div className="space-y-5  ">
           <div>
             <Input
-              {...register("user_name")}
+              {...register("name")}
               type="text"
               size="sm"
               label="User name"
             />
-            {errors.user_name && (
-              <p className="text-red-500 text-sm">{errors.user_name.message}</p>
+            {errors.name && (
+              <p className="text-red-500 text-sm">{errors.name.message}</p>
+            )}
+          </div>
+          <div>
+            <Input
+              {...register("phone_number", { valueAsNumber: true })}
+              type="number"
+              size="sm"
+              label="Phone Number"
+            />
+            {errors.phone_number && (
+              <p className="text-red-500 text-sm">
+                {errors.phone_number.message}
+              </p>
             )}
           </div>
           <div>
@@ -72,9 +107,9 @@ const RegisterScreen = () => {
             size="md"
             className="font-semibold"
             color="primary"
-            disabled={isSubmitting}
+            disabled={loading}
           >
-            {isSubmitting ? "Register in..." : "Register"}
+            {loading ? "Register in..." : "Register"}
           </Button>
         </div>
       </form>

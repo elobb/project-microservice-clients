@@ -1,6 +1,7 @@
 import React, { Dispatch, SetStateAction, useState } from "react";
 import LoginScreen from "./LoginScreen";
 import RegisterScreen from "./RegisterScreen";
+import OtpScreen from "./OtpScreen";
 // Define the props interface
 interface ComponentProps {
   authModal: boolean;
@@ -19,15 +20,22 @@ const AuthSereen: React.FC<ComponentProps> = ({ authModal, setAuthModal }) => {
 
       <div className="z-40  w-[80%]  md:w-[40%] h-fit mt-[10%] p-4 bg-gray-900 rounded-lg text-white   border border-gray-700">
         <div className="cursor-pointer ms-auto text-blue-500 w-fit text-sm ">
-          {authType == "login" ? (
-            <p onClick={() => setAuthType("register")}>
-              Dont have an account ?
-            </p>
-          ) : (
-            <p onClick={() => setAuthType("login")}>Have an account ?</p>
+          {authType !== "verify" && (
+            <>
+              {" "}
+              {authType == "login" ? (
+                <p onClick={() => setAuthType("register")}>
+                  Dont have an account ?
+                </p>
+              ) : (
+                <p onClick={() => setAuthType("login")}>Have an account ?</p>
+              )}
+            </>
           )}
         </div>
-        {authType == "login" ? <LoginScreen /> : <RegisterScreen />}
+        {authType == "login" && <LoginScreen />}
+        {authType == "register" && <RegisterScreen setAuthType={setAuthType} />}
+        {authType == "verify" && <OtpScreen setAuthType={setAuthType} />}
       </div>
     </div>
   );
